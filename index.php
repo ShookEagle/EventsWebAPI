@@ -12,6 +12,7 @@ if ($SteamOpenID->ShouldValidate()) {
     try {
         $CommunityID = $SteamOpenID->Validate();
         $_SESSION['steamid'] = $CommunityID;
+        header('Location: dashboard.php');
         echo '✅ Logged in as SteamID: ' . $CommunityID;
         // You can now proceed to fetch user details or start a session
     } catch (Exception $e) {
