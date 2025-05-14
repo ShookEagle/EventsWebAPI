@@ -4,20 +4,25 @@ require_once __DIR__ . '/lib/SteamOpenID.php'; // Adjust if in a different path
 
 use xPaw\Steam\SteamOpenID;
 
-$openid = new SteamOpenID('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+$ReturnToUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
-try {
-    // If Steam has redirected back and we should validate
-    if ($openid->ShouldValidate()) {
-        $steamID64 = $openid->Validate(); // This will throw an exception if it fails
-        $_SESSION['steamid'] = $steamID64;
-        header('Location: dashboard.php');
-        exit;
+$SteamOpenID = new SteamOpenID($ReturnToUrl);
+
+if ($SteamOpenID->ShouldValidate()) {
+    try {
+        $CommunityID = $SteamOpenID->Validate();
+        $_SESSION['steamid'] = $CommunityID;
+        echo '✅ Logged in as SteamID: ' . $CommunityID;
+        // You can now proceed to fetch user details or start a session
+    } catch (Exception $e) {
+        echo '❌ Login failed: ' . $e->getMessage();
     }
-} catch (Exception $e) {
-    echo '❌ Steam login failed: ' . $e->getMessage();
+} else {
+    // Redirect the user to Steam for authentication
+    header('Location: ' . $SteamOpenID->GetAuthUrl());
     exit;
 }
+
 
 ?>
 
@@ -29,7 +34,7 @@ try {
 </head>
 <body>
 <h1>Welcome to the CS2 Events Panel</h1>
-<p><a href="<?= $openid->GetAuthUrl(); ?>">
+<p><a href="<?= $SteamOpenID->GetAuthUrl(); ?>">
         <img src="https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_01.png" alt="Login with Steam">
     </a></p>
 </body>
